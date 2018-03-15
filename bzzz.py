@@ -1,4 +1,5 @@
 #code de ouf
+import serial
 
 print("hello")
 print("lol")
