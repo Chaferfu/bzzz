@@ -1,0 +1,7 @@
+# bzzz
+
+
+Format de la trame :
+$h=TIME,t=TEMPERATURE1,TEMPERATURE2,...,p=PRESSION1,PRESSION2,...*$
+
+en maj : les valeurs relevées en valeurs entières en millidegrés etc POUR EVITER LES FLOTTANTS DE MERDE
