@@ -1,10 +1,11 @@
 #Ca genere des trames aléatoires du format qu'on asdit qu'on fait 
 import random as r
 from datetime import datetime
+import string
 
 #genere une trame random avecla date de maintenant
 #txErreur a 
-def generateRandomTrame(randomSeed=0, txErreur = 0):
+def generateRandomTrameFromPresent(randomSeed=0, txErreur = 0):
 
 	r.seed(randomSeed)
 
@@ -28,7 +29,10 @@ def generateRandomTrame(randomSeed=0, txErreur = 0):
 
 	#generation erreur
 	if r.randint(0,100) < txErreur: #txErreur chances sur 100 de mettr eune erreur
-		trame[r.randint(0,len(trame))] = r.choice(string.printable)
+		liste = list(trame)
+		liste[r.randint(0,len(liste))] = r.choice(string.printable)
+		trameTumefiee = "".join(liste)
+		return trameTumefiee
 
 	return trame
 
@@ -52,5 +56,10 @@ def genTrameFile(filename, randSeed = datetime.now().microsecond, txErreur = 0):
 			f.write(generateRandomTrame(i, txErreur))
 			f.write("\n")
 
+#prend une trame, la tumefiee et la renvoie dans un etat de bug confirme
+def tumefierTrame(trame):
+	liste = list(trame)
+	liste[r.randint(0,len(liste))] = r.choice(string.printable)
+	trameTumefiee = "".join(liste)
+	return trameTumefiee
 
-genTrameFile("out1")
