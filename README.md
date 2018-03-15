@@ -1,1 +1,3 @@
 # bzzz
+
+$h,TIME,t,TEMP1,TEMP2,...,p,PRESSION1,PRESSION2,...,*$
