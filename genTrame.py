@@ -44,14 +44,13 @@ def getTimeString():
 	return time
 
 #genere un fichier rempli de trames random
-def genTrameFile(filename, randSeed = 0, txErreur = 0):
+def genTrameFile(filename, randSeed = datetime.now().microsecond, txErreur = 0):
 
 	with open(filename, "w") as f:
 
-		time = datetime.now().microsecond
-
-		for i in range(time,time+10000):
+		for i in range(randSeed,randSeed+10000):
 			f.write(generateRandomTrame(i, txErreur))
 			f.write("\n")
 
 
+genTrameFile("out1")
