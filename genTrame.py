@@ -3,7 +3,8 @@ import random as r
 from datetime import datetime
 
 #genere une trame random avecla date de maintenant
-def generateRandomTrame(txErreur=0, randomSeed = 0):
+#txErreur a 
+def generateRandomTrame(randomSeed=0, txErreur = 0):
 
 	r.seed(randomSeed)
 
@@ -25,6 +26,10 @@ def generateRandomTrame(txErreur=0, randomSeed = 0):
 	
 	trame += "*$"
 
+	#generation erreur
+	if r.randint(0,100) < txErreur: #txErreur chances sur 100 de mettr eune erreur
+		trame[r.randint(0,len(trame))] = r.choice(string.printable)
+
 	return trame
 
 	
@@ -38,5 +43,15 @@ def getTimeString():
 	time = time.split(".")[0]
 	return time
 
+#genere un fichier rempli de trames random
+def genTrameFile(filename, randSeed = 0, txErreur = 0):
 
-print(generateRandomTrame(0, datetime.now().microsecond))
+	with open(filename, "w") as f:
+
+		time = datetime.now().microsecond
+
+		for i in range(time,time+10000):
+			f.write(generateRandomTrame(i, txErreur))
+			f.write("\n")
+
+
