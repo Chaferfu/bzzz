@@ -56,7 +56,7 @@ def genTrameFile(filename, randSeed = datetime.now().microsecond, txErreur = 0):
 			f.write(generateRandomTrame(i, txErreur))
 			f.write("\n")
 
-#prend une trame, la tumefiee et la renvoie dans un etat de bug confirme
+#prend une trame, la tumefie et la renvoie dans un etat de bug total
 def tumefierTrame(trame):
 	liste = list(trame)
 	liste[r.randint(0,len(liste))] = r.choice(string.printable)
