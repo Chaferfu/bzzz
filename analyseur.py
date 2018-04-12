@@ -4,6 +4,53 @@ import serial
 import serial.tools.list_ports
 
 TRASH_STATE = 1000 # Numero de l'etat poubelle (automate lexical)
+        
+# Automate LR(0) de l'analyseur syntaxique
+# Chaque cle est representee par un tuple de la forme ["BEG", 8] ou
+# "BEG" est le token lu, et 8 est l'etat actuel. La valeur en resultant
+# decrit l'etat vers lequel aller, et si celle-ci est egale a 0, alors
+# une reduction doit avoir lieu.
+nb_members_LR = {}
+nb_members_LR[3] = 1
+nb_members_LR[7] = 3
+nb_members_LR[10] = 1
+nb_members_LR[11] = 1
+nb_members_LR[12] = 1
+nb_members_LR[13] = 3
+nb_members_LR[15] = 3
+
+syntax_LR = {}
+syntax_LR["BEG", 1] = 2
+syntax_LR["TYPE", 2] = 8
+syntax_LR["SubData", 2] = 3
+syntax_LR["Data", 2] = 4
+syntax_LR["END", 3] = "Data"
+syntax_LR["CUT", 3] = "Data"
+syntax_LR["END", 4] = 5
+syntax_LR["CUT", 4] = 6
+syntax_LR["TYPE", 6] = 8
+syntax_LR["SubData", 6] = 7
+syntax_LR["END", 7] = "Data"
+syntax_LR["CUT", 7] = "Data"
+syntax_LR["CUT", 8] = 9
+syntax_LR["NUM_INT", 9] = 11
+syntax_LR["NUM_FLT", 9] = 12
+syntax_LR["Value",9] = 10
+syntax_LR["LValue", 9] = 13
+syntax_LR["END", 10] = "LValue"
+syntax_LR["CUT", 10] = "LValue"
+syntax_LR["END", 11] = "Value"
+syntax_LR["CUT", 11] = "Value"
+syntax_LR["END", 12] = "Value"
+syntax_LR["CUT", 12] = "Value"
+syntax_LR["END", 13] = "SubData"
+syntax_LR["CUT", 13] = 14
+syntax_LR["NUM_INT", 14] = 11
+syntax_LR["NUM_FLT", 14] = 12
+syntax_LR["Value", 14] = 15
+syntax_LR["END", 15] = "LValue"
+syntax_LR["CUT", 15] = "LValue"
+# Fin de l'automate
 
 class error_list :
     no_port_error = "no port is used or available"
@@ -30,22 +77,26 @@ format d'un token :
 règles de grammaire :
 
 String ::= BEG Data END
+
 Data ::= Data CUT SubData
 |SubData
 
 SubData ::= TYPE CUT LValue
 
-LValue ::= LValue CUT DATA
-|DATA
+LValue ::= LValue CUT Value
+|Value
+
+Value ::= NUM_INT
+|NUM_FLT
 
 '''
 
 # Trouve les ports COM utilisés et renvoie un tuple les contenant
 def list_ports() :
-    list = serial.tools.list_ports.comports()
+    #list = serial.tools.list_ports.comports()
     connected = []
-    for element in list:
-        connected.append(element.device)
+    #for element in list:
+        #connected.append(element.device)
     return connected
 
 # Transforme les informations recuperes en tokens
@@ -123,6 +174,38 @@ def lexical_analysis(data):
             i += 1
     return tokens
     
+def syntaxical_analysis(tokens) :
+    # Implementation de l'automate LR(0) de l'analyseur
+    state = 1
+    pile = []
+    token_pile = []
+    try :
+        while len(tokens) > 0 :
+            if state == 13 :
+                if len(tokens) > 1 and tokens[1][0] == "TYPE" :
+                    new_state = "SubData"
+                else :
+                     new_state = 14
+            else :
+                 new_state = syntax_LR[tokens[0][0], state]
+            # Reduction
+            if type(new_state) is str :
+                member_count = nb_members_LR[state]
+                for i in range(member_count) :
+                    pile.pop()
+                state = syntax_LR[new_state, pile[len(pile)-1]]
+            else :
+                state = new_state
+                if tokens[0][0] in ("NUM_INT", "NUM_FLT", "TYPE") :
+                    token_pile.append(tokens[0])
+                del tokens[0]
+            pile.append(state)
+    except KeyError :
+        print("Error : the message received is not correct...")
+        return False
+    # On cree l'arbre a partir de la pile de tokens
+    return token_pile
+
 def error_exit(error_msg) :
     print("Error : " + error_msg + "\nExiting the program...")
     exit()
@@ -134,13 +217,16 @@ if __name__ == "__main__" :
         # Ouverture du port utilise si existant
         if len(connected_ports) >= 0 : # En realite >= 1
             #~ ser = serial.Serial(connected_ports[0], 9600, timeout=1)
-            #~ print("Port list : " + str(connected_ports))
+            print("Port list : " + str(connected_ports))
             fp = open(sys.argv[1])
             data = fp.read()
             print(data)
-            # Analyse syntaxique
+            # Analyse lexicale
             tokens = lexical_analysis(data)
-            print(tokens)
+            # Analyse syntaxique
+            token_list = syntaxical_analysis(tokens)
+            # TODO : retirer ce print
+            print(token_list)
         else :
             error_exit(error_list.no_port_error)
     else :
