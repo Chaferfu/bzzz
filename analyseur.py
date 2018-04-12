@@ -209,6 +209,23 @@ def syntaxical_analysis(tokens) :
 def error_exit(error_msg) :
     print("Error : " + error_msg + "\nExiting the program...")
     exit()
+    
+def print_data(token_list) :
+    phrase = "Data field : "
+    for i in range(len(token_list)) :
+        if token_list[i][0] == "TYPE" :
+            phrase += "\n"
+            phrase += token_list[i][1]
+            phrase += " : "
+        elif i != len(token_list)-1 and token_list[i+1][0] == "TYPE" :
+            phrase += token_list[i][1]
+        elif i != len(token_list)-1 :
+            phrase += token_list[i][1]
+            phrase += ", "
+        else :
+            phrase += token_list[i][1]
+    phrase += "\n"
+    return phrase
 
 if __name__ == "__main__" :
     if len(sys.argv) >= 2 and type(sys.argv[1]) is str :
@@ -218,15 +235,34 @@ if __name__ == "__main__" :
         if len(connected_ports) >= 0 : # En realite >= 1
             #~ ser = serial.Serial(connected_ports[0], 9600, timeout=1)
             print("Port list : " + str(connected_ports))
-            fp = open(sys.argv[1])
-            data = fp.read()
-            print(data)
-            # Analyse lexicale
-            tokens = lexical_analysis(data)
-            # Analyse syntaxique
-            token_list = syntaxical_analysis(tokens)
-            # TODO : retirer ce print
-            print(token_list)
+            # Partie Lecture de fichier
+            # Deux modes disponibles : lecture d'une trame ou lecture de plusieurs trames (-m)
+            if len(sys.argv) >= 3 and sys.argv[1] == "-m" :
+                fp = open(sys.argv[2])
+                str_list = []
+                for line in  fp :
+                    str_list.append(line)
+                fp.close()
+                print(str_list)
+                for data in str_list :
+                    # Analyse lexicale
+                    tokens = lexical_analysis(data)
+                    # Analyse syntaxique
+                    token_list = syntaxical_analysis(tokens)
+                    # TODO : retirer ce print
+                    if token_list != False :
+                        print(print_data(token_list))
+            else :
+                fp = open(sys.argv[1])
+                data = fp.read()
+                fp.close()
+                print(data)
+                # Analyse lexicale
+                tokens = lexical_analysis(data)
+                # Analyse syntaxique
+                token_list = syntaxical_analysis(tokens)
+                # TODO : retirer ce print
+                print(print_data(token_list))
         else :
             error_exit(error_list.no_port_error)
     else :
